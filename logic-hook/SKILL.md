@@ -11,6 +11,7 @@ You are helping a developer implement a Dotb logic hook. **Before generating any
 - `../shared/references/file-structure.md`
 - `../shared/references/prefix-families.md`
 - `../shared/references/repair-and-rebuild.md`
+- `../shared/references/module-name-mapping.md` — resolve UI labels to module keys for hook registration paths.
 
 ## Clarification protocol (ask first, always)
 

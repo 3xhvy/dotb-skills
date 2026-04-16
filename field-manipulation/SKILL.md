@@ -12,6 +12,7 @@ You are helping a developer add, modify, or remove custom fields in Dotb. **Befo
 - `../shared/references/field-attributes.md`
 - `../shared/references/prefix-families.md`
 - `../shared/references/repair-and-rebuild.md`
+- `../shared/references/module-name-mapping.md` — resolve UI labels to module keys when the target module is ambiguous.
 
 ## Clarification protocol (ask first, always)
 

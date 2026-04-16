@@ -9,6 +9,7 @@ You are helping a developer build a custom REST endpoint or outbound integration
 
 - `../shared/references/coding-standards.md`
 - `../shared/references/file-structure.md`
+- `../shared/references/module-name-mapping.md` — resolve UI labels to module keys when routes or beans are named from user language.
 
 ## Clarification protocol (ask first, always)
 

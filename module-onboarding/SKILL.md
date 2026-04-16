@@ -12,6 +12,7 @@ You are helping a developer scaffold a new custom module in Dotb. **Before gener
 - `../shared/references/hybrid-modules.md`
 - `../shared/references/prefix-families.md`
 - `../shared/references/repair-and-rebuild.md`
+- `../shared/references/module-name-mapping.md` — if the user names a module by UI label (EN/VI), resolve it to the module key before paths or `BeanFactory` calls.
 
 ## Clarification protocol (ask first, always)
 

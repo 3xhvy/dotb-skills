@@ -10,6 +10,7 @@ You are helping a developer build reports, dashlets, or scheduled report deliver
 - `../shared/references/coding-standards.md`
 - `../shared/references/file-structure.md`
 - `../shared/references/repair-and-rebuild.md`
+- `../shared/references/module-name-mapping.md` — resolve UI labels to module keys for report/dashlet data sources.
 
 ## Clarification protocol (ask first, always)
 

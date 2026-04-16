@@ -30,7 +30,7 @@ git commit -m "Bump dotb-cursor-skills"
 | `api-integration` | Custom REST endpoints and external API calls |
 | `reports-dashboards` | Reports, dashlets, scheduled delivery |
 
-Cross-cutting references live in `shared/references/`. Per-skill recipes live in `<skill>/examples/`.
+Cross-cutting references live in `shared/references/` (including **`module-name-mapping.md`**: English/Vietnamese UI labels → internal module keys). Per-skill recipes live in `<skill>/examples/`.
 
 ## Contributing
 

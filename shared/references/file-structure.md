@@ -65,6 +65,10 @@ custom/
 
 See `hybrid-modules.md` for the full decision tree.
 
+## Module display names vs internal keys
+
+Navigation and Studio often show **translated labels** (e.g. “Students”, “Schedules”, “Học viên”) while code uses **module keys** (`Contacts`, `Meetings`, `J_Class`). When the user’s wording does not match a folder name under `modules/`, read `module-name-mapping.md` or the live files `custom/Extension/application/Ext/Language/en_us.moduleList.php` and `vn_vn.moduleList.php`.
+
 ## After Making Changes
 
 See `repair-and-rebuild.md` for Quick Repair & Rebuild, Rebuild Relationships, CLI, and log locations.

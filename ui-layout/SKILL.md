@@ -11,6 +11,7 @@ You are helping a developer modify a view or layout. **Before generating any cod
 - `../shared/references/file-structure.md`
 - `../shared/references/hybrid-modules.md`
 - `../shared/references/repair-and-rebuild.md`
+- `../shared/references/module-name-mapping.md` — resolve UI labels to module keys for layout/view paths.
 
 ## Clarification protocol (ask first, always)
 
