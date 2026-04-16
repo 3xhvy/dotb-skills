@@ -23,6 +23,10 @@ Submit a PR that includes your rationale and cross-references to motivating exam
 
 When you ship a reference change, update `CHANGELOG.md` under `## <date>` (or the project’s agreed heading for that release).
 
+### Regenerating `module-name-mapping.md`
+
+When `custom/Extension/application/Ext/Language/en_us.moduleList.php` or `vn_vn.moduleList.php` changes in the product repo, refresh `shared/references/module-name-mapping.md` so UI labels stay accurate. Parse both files for `$app_list_strings['moduleList']` and `moduleListSingular` keys and rebuild the markdown table (same shape as the current file: module key, EN list/singular, VN list/singular).
+
 ## Promote an example into a reference
 
 Do this when three examples across any skill repeat the same insight, or when a reviewer flags content as evergreen.
