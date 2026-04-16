@@ -12,15 +12,24 @@ You are helping a developer add, modify, or remove custom fields in Dotb. **Befo
 - `../shared/references/field-attributes.md`
 - `../shared/references/prefix-families.md`
 - `../shared/references/repair-and-rebuild.md`
-- `../shared/references/module-name-mapping.md` — resolve UI labels to module keys when the target module is ambiguous.
+- `../shared/references/module-name-mapping.md` — **read before asking “which module?”** Match UI labels and the **Spoken aliases** section (case-insensitive).
 
-## Clarification protocol (ask first, always)
+## Clarification protocol (tiered — do not spam menus)
 
-1. **Target module** and whether it is BWC, Lumia, or hybrid (`$dotb_config['hybrid_modules']`).
-2. **Prefix** for the new field name — ask; do not invent. See `prefix-families.md`.
-3. **Field spec:** machine name, label key, type (`varchar`, `enum`, `multienum`, `relate`, `link`, etc.), DB vs `non-db`, required, audited.
-4. For **enum/multienum:** `options` list name; confirm keys and **both** `en_us` and `vn_vn` list labels in `custom/Extension/application/Ext/Language/` when creating new lists.
-5. For **relate/link:** relationship name, RHS module, id field name, cardinality.
+### Step 0 — Resolve the module (mandatory, silent if possible)
+
+1. Open `module-name-mapping.md`. Match the user’s words against the big table **and** the **Spoken aliases** subsection.
+2. If **one** module clearly applies (e.g. “create field on student” / “field in student” → **`Contacts`** per aliases; “schedules” → `Meetings`), **state the resolved module key in one sentence** and proceed. **Do not** present a long A/B/C/D list for that case.
+3. Ask **only** when two or more modules remain plausible after aliases (e.g. person vs class enrollment). Then **one short question**, not a full form letter.
+
+Then read `$dotb_config['hybrid_modules']` in the consumer `config.php` / `config_override.php` to know if the resolved module is hybrid (for metadata follow-up only; vardef path is still extension-first).
+
+### What you must still ask (unless the user already said it)
+
+1. **Prefix / field naming** — do not invent a new `J_`/`C_` family prefix; see `prefix-families.md`. For **core** modules (`Contacts`, `Accounts`, `Leads`), mirror existing `custom/Extension/modules/<Module>/Ext/Vardefs/` naming patterns in that repo; if unclear, ask **one** question.
+2. **Field spec** if missing: machine name (or propose from label and ask confirm), type, required/audited as needed.
+3. **Enum/multienum:** `options` list name; **both** `en_us` and `vn_vn` list labels when creating new app list strings.
+4. **Relate/link:** relationship name, RHS module, id field, cardinality — always confirm if not given.
 
 Use the attribute matrix in `field-attributes.md` for every attribute you set.
 

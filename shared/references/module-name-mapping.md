@@ -15,8 +15,18 @@ If a module is missing here, re-read those files in the consumer workspace (exte
 
 1. If the user says a label (e.g. “Schedules”, “Students”, “Lớp học”), **search this table** (English and Vietnamese columns) for a match.
 2. Use the **Module key** column in all file paths and API calls.
-3. If multiple rows could match fuzzy text, **ask the user** which module key they mean.
+3. If multiple rows could match fuzzy text, use **Spoken aliases** defaults first; only then ask a **single** short clarification (not a long menu).
 4. **SugarCRM defaults differ from Dotb labels:** e.g. `Contacts` is labeled “Students” / “Học viên”; `Meetings` is “Schedules” / “Cuộc học”; `Accounts` is “Corporates” / “Công ty”; `Cases` is “Feedback” / “Phản hồi”.
+
+## Spoken aliases (default when the user is vague)
+
+Use **case-insensitive** matching on the words below. If the user’s message matches a row in this table **and does not** also mention class enrollment, situations, or gradebook (see “Disambiguate”), resolve to the **Default module key** without asking “which module?” in a long multiple-choice list—state the resolution in one line and continue.
+
+| User may say | Default module key | Bean / dictionary | Disambiguate — ask only if user also mentions |
+|--------------|-------------------|-------------------|-----------------------------------------------|
+| student, students, học viên, hv, “the student record”, “on student” (no other module named) | `Contacts` | `Contact` | **Class roster / enrollment:** `J_ClassStudents` (“class student”, “student in class”, “enrollment”). **Learning history:** `J_StudentSituations` (“situation”, “quá trình học”). **Attendance line:** often `C_Attendance` or related submodules—ask if they say “điểm danh” only. |
+
+If the user is vague **and** two defaults could apply, ask **one** short question (not A/B/C/D lists): e.g. “Should this field live on the **person** (`Contacts`) or the **class enrollment** row (`J_ClassStudents`)?”
 
 | Module key | English (list) | English (singular) | Vietnamese (list) | Vietnamese (singular) |
 |------------|----------------|---------------------|-------------------|----------------------|
