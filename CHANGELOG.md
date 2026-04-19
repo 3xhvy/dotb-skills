@@ -4,6 +4,8 @@ All notable changes to `dotb-cursor-skills` are logged here. Append-only. Newest
 
 ## Unreleased
 
+- Field skill: **Step 0a** — mandatory question: place the field in `custom/Extension/modules/<M>/Ext/Vardefs/` (recommended, especially core) vs `modules/<M>/vardefs.php` (custom modules; warn + require written confirmation for stock/core). Workflow Step 1 and output format updated to follow the user’s choice.
+
 ## 2026-04-19
 
 - Rename `cursorrules` → `dotb.mdc` and rewrite as a Dotb-specific, always-on project rule (MDC frontmatter `alwaysApply: true`). Removes SugarCRM 6.x / `pfx_` / `sugarcrm.log` / `v4_1` legacy content; aligns with Sidecar + BWC + hybrid architecture, `DotbApi`, `$dotb_config`, `./dotbcrm.log`, `dotbEntry`, prefix families, bilingual `en_us` + `vn_vn` labels, and PHP 7.4+. Delegates to the six SKILLs instead of restating them.

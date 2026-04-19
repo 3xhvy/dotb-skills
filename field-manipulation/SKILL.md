@@ -1,6 +1,6 @@
 ---
 name: dotb-field-manipulation
-description: Use this skill whenever a developer needs to add, modify, or remove custom fields on any Dotb module (core or custom). Covers vardef Extensions, dropdown/enum lists, relate fields with id_name/rname, 1:N and N:M relationships. Triggers on keywords "add field", "custom field", "vardef", "relate field", "dropdown field", "enum field", "remove field", "modify field", "relationship". Always use this skill before writing any field-related code.
+description: Use this skill whenever a developer needs to add, modify, or remove custom fields on any Dotb module (core or custom). Covers vardef Extensions, dropdown/enum lists, relate fields with id_name/rname, 1:N and N:M relationships. Always ask whether new fields go in custom/Extension/modules/<M>/Ext/Vardefs/ (upgrade-safe) or modules/<M>/vardefs.php (module tree; warn on stock modules). Triggers on keywords "add field", "custom field", "vardef", "relate field", "dropdown field", "enum field", "remove field", "modify field", "relationship". Always use this skill before writing any field-related code.
 ---
 
 # Dotb Field Manipulation Skill
@@ -24,6 +24,22 @@ You are helping a developer add, modify, or remove custom fields in Dotb. **Befo
 
 Then read `$dotb_config['hybrid_modules']` in the consumer `config.php` / `config_override.php` to know if the resolved module is hybrid (for metadata follow-up only; vardef path is still extension-first).
 
+### Step 0a — Where the vardef lives (mandatory — ask; do not assume)
+
+Unless the user **already** chose explicitly, you MUST ask **once** which physical location they want for the field definition:
+
+| Choice | Path | When it is appropriate |
+| ------ | ---- | ---------------------- |
+| **A — Extension (upgrade-safe, default recommendation)** | `custom/Extension/modules/<ModuleKey>/Ext/Vardefs/<descriptive_name>.php` | **Always** for stock/core modules (`Accounts`, `Contacts`, `Leads`, `Meetings`, …). Also for extending **any** existing module when the team wants merged metadata and safe upgrades. |
+| **B — Module-root vardefs** | `modules/<ModuleKey>/vardefs.php` (same `$dictionary['<BeanName>']['fields'][...]` shape) | Primarily for **new custom modules** the team fully owns, where the bean’s dictionary is maintained in-repo under `modules/<ModuleKey>/`. |
+
+**Rules:**
+
+- **Never** silently pick A or B. If the user did not say, ask: *“Put this field in `custom/Extension/.../Ext/Vardefs/` (upgrade-safe) or in `modules/<Module>/vardefs.php` (module tree)?”* and wait for an answer.
+- If they choose **B** on a **stock/core** module, **stop and warn in one sentence**: direct edits to `modules/<Core>/vardefs.php` are **not upgrade-safe** and are overwritten by product upgrades; recommend **A** again. Only proceed with **B** if they **confirm in writing** they accept that risk (some teams have a forked core — still document the trade-off).
+- If they choose **A**, follow the path template in Workflow Step 1 below.
+- If they choose **B** for a custom module, edit only `$dictionary['<BeanName>']['fields'][...]` in `modules/<ModuleKey>/vardefs.php`; never delete unrelated fields; match the style of that file.
+
 ### What you must still ask (unless the user already said it)
 
 1. **Prefix / field naming** — do not invent a new `J_`/`C_` family prefix; see `prefix-families.md`. For **core** modules (`Contacts`, `Accounts`, `Leads`), mirror existing `custom/Extension/modules/<Module>/Ext/Vardefs/` naming patterns in that repo; if unclear, ask **one** question.
@@ -35,17 +51,21 @@ Use the attribute matrix in `field-attributes.md` for every attribute you set.
 
 ## Workflow
 
-### Step 1 — Prefer Extension vardefs
+### Step 1 — Apply the vardef placement from Step 0a
 
-Path template:
+- **If the user chose Extension (A):** use
 
-`custom/Extension/modules/<Module>/Ext/Vardefs/[descriptive_name].php`
+  `custom/Extension/modules/<Module>/Ext/Vardefs/[descriptive_name].php`
 
-Manipulate `$dictionary['<BeanName>']['fields'][...]` only. Never clear existing fields.
+- **If the user chose module-root (B) and it is allowed (see Step 0a):** edit
 
-### Step 2 — Varchar example (extension)
+  `modules/<Module>/vardefs.php`
 
-Mirror real pattern:
+In both cases manipulate `$dictionary['<BeanName>']['fields'][...]` only. Never clear existing fields.
+
+### Step 2 — Varchar example (same field array shape for A or B)
+
+For **Extension (A)**, mirror this real pattern (paths differ; dictionary shape is identical for **B** in `modules/<Module>/vardefs.php`):
 
 ```1:20:custom/Extension/modules/Contacts/Ext/Vardefs/vardefs.php
 $dictionary['Contact']["fields"]["grade"] = array(
@@ -105,9 +125,10 @@ Quick Repair & Rebuild; Rebuild Relationships when relationships changed.
 
 ## Output format
 
-1. File tree.
-2. Each file — full path + complete content.
-3. Post-install steps from `repair-and-rebuild.md`.
+1. One line restating **Step 0a** choice: Extension (`custom/Extension/.../Ext/Vardefs/`) vs module-root (`modules/.../vardefs.php`).
+2. File tree.
+3. Each file — full path + complete content.
+4. Post-install steps from `repair-and-rebuild.md`.
 
 ## Examples index
 
