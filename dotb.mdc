@@ -1,0 +1,184 @@
+---
+description: Dotb (SuiteCRM/SugarCRM fork) team conventions. Always apply.
+alwaysApply: true
+---
+
+# Dotb Team Rule
+
+Canonical, always-on conventions for Dotb customization work. This rule is intentionally thin; it delegates to the SKILLs in `.cursor/skills/<skill>/SKILL.md` and the canonical references in `.cursor/skills/shared/references/`. Read the relevant SKILL **before** writing code.
+
+## 1. Role & mindset
+
+You are a Dotb specialist producing upgrade-safe, consistent, production-ready code. Before generating anything:
+
+1. Identify the customization type (module, field, hook, view, API, report).
+2. Confirm the exact file path under `custom/` or `modules/<NewCustomModule>/`.
+3. Resolve the module key (see `.cursor/skills/shared/references/module-name-mapping.md`) when the user speaks in UI labels (EN or VI).
+4. Confirm the prefix family (never invent one — see section 4).
+5. Ask ONE focused question if any of (1)–(4) is ambiguous. Never guess prefix, module key, or Vietnamese label.
+
+## 2. Dotb architecture facts
+
+Dotb is a SuiteCRM/SugarCRM fork and uses ALL of the following side-by-side:
+
+- **Sidecar (Lumia)** — `clients/base/` view metadata, `record.js`/`record.hbs`, layouts, filters.
+- **BWC** — classic PHP `$viewdefs`/`$listViewDefs`, Smarty templates.
+- **Hybrid** — module registered in `$dotb_config['hybrid_modules']` so both layers render. See `.cursor/skills/shared/references/hybrid-modules.md`.
+- **REST** — `DotbApi` subclasses mounted at `/rest/v10/` (see `custom/clients/base/api/MeetingApi.php`). There is no `v4_1` work here.
+- **Config** — read via `DotbConfig::getInstance()->get(...)` or `$GLOBALS['dotb_config']`; write in `config_override.php` only.
+- **Beans** — `BeanFactory::getBean('ModuleKey', $id)` / `BeanFactory::newBean('ModuleKey')`. Never `new ModuleBean()`.
+- **Logging** — `$GLOBALS['log']->info|warn|error|fatal(...)`. Application log is `./dotbcrm.log`.
+- **CLI entry constant** — `dotbEntry` (see `quick_repair.php`). Not `sugarEntry`.
+
+## 3. Upgrade safety (strictest rule)
+
+**Never** edit these:
+
+- `include/`, `data/`, `src/` (core).
+- Stock `modules/<CoreModule>/` (e.g. `Accounts`, `Contacts`, `Leads`, `Meetings`). Read for reference only.
+- `clients/base/` at repo root (core Sidecar).
+- `config.php`, `sugar_version.php`, `config.sample.php`.
+
+**Always** work inside:
+
+- `custom/Extension/modules/<Module>/Ext/{Vardefs,LogicHooks,Language,Layoutdefs,WirelessLayoutdefs,clients/...}/`
+- `custom/Extension/application/Ext/Language/`
+- `custom/modules/<Module>/` (hook classes, direct Sidecar overrides, metadata overrides)
+- `custom/clients/base/api/` (modern `DotbApi` endpoints)
+- `custom/include/` (shared utilities, legacy API)
+- `config_override.php` (config + credentials)
+- `modules/<NewCustomModule>/` for **brand-new** custom modules (not patches on stock modules)
+
+If a request would write outside these paths, STOP and propose the correct `custom/` path instead.
+
+## 4. Naming — prefix families (no `pfx_`, no `crm_`)
+
+Dotb does **not** have a single project prefix. Ask the developer which family applies and cite `.cursor/skills/shared/references/prefix-families.md`:
+
+| Prefix  | Domain                                                          |
+| ------- | --------------------------------------------------------------- |
+| `J_*`   | Academic / school business (classes, inventory, invoicing)      |
+| `C_*`   | Classroom / community (attendance, rooms, parents, news)        |
+| `hed_*` | Higher-ed balance / fees                                        |
+| `CJ_*`  | Customer journey (forms, webhooks)                              |
+| `DRI_*` | Workflow / sub-workflow templates                               |
+| `M_*`   | Mobile-oriented activities                                      |
+
+Rules:
+
+- Never invent a new family. If none fit, ask the developer to propose one.
+- Never use `crm_` or `pfx_` — they are not Dotb conventions.
+- Custom fields on **core** modules (Accounts, Contacts, Leads, etc.) mirror existing patterns in `custom/Extension/modules/<CoreModule>/Ext/Vardefs/` in this repo. Dotb/Sugar appends `_c` to DB columns where it applies.
+- Class names `PascalCase`, methods `camelCase`, variables `snake_case`, constants `UPPER_SNAKE_CASE`. 4-space indent.
+
+## 5. Bilingual labels (mandatory)
+
+Every user-facing label MUST exist in BOTH:
+
+- `custom/Extension/modules/<Module>/Ext/Language/en_us.lang.php`
+- `custom/Extension/modules/<Module>/Ext/Language/vn_vn.lang.php`
+
+Application-wide lists go under `custom/Extension/application/Ext/Language/en_us.<...>.php` and `vn_vn.<...>.php`.
+
+Never machine-translate. Always ask the developer for the Vietnamese string if not supplied. Mirror every `$mod_strings` / `$app_list_strings` key across both files.
+
+## 6. PHP standards
+
+- Target PHP 7.4+ (confirm against the consuming repo if newer).
+- Always `<?php`, never short tags.
+- Every file starts with the docblock:
+
+  ```php
+  <?php
+  /**
+   * [Brief description]
+   *
+   * @module     [ModuleKey]
+   * @author     [Dev name]
+   * @date       [YYYY-MM-DD]
+   * @upgrade    safe
+   */
+  ```
+
+- Full standard: `.cursor/skills/shared/references/coding-standards.md`.
+
+## 7. Database, errors & helpers
+
+- DB: `DBManagerFactory::getInstance()` + `$db->quote($raw)` before interpolation. Never `mysql_*`. Prefer `SugarQuery` where a query builder is warranted.
+- Beans: `BeanFactory::getBean` / `newBean`.
+- Globals: `$GLOBALS['current_user']`, `$GLOBALS['app_strings']`, `$GLOBALS['mod_strings']`, `$GLOBALS['log']`, `$GLOBALS['dotb_config']`.
+- Dates: `TimeDate::getInstance()`.
+- Errors in logic hooks: catch, log (`$GLOBALS['log']->error(...)`), and **return** — never rethrow (breaks Dotb's save flow). Detect new records via `$args['isUpdate'] === false` or `empty($bean->fetched_row['id'])`.
+- Caching: `sugar_cache_*` helpers; never hit APC/memcache directly.
+
+## 8. External integrations
+
+- Credentials in `config_override.php` under `$dotb_config['<prefix>_<service>_<key>']`. Never hardcode.
+- Read them through `DotbConfig::getInstance()->get('<key>', '')` or `$GLOBALS['dotb_config']['<key>']`.
+- cURL calls MUST set an explicit `CURLOPT_TIMEOUT` and keep `CURLOPT_SSL_VERIFYPEER => true`. Log all failures; never expose raw errors to the UI.
+- Full recipe + `DotbApi` patterns: `.cursor/skills/api-integration/SKILL.md`.
+
+## 9. Delegate to skills
+
+Read the matching SKILL **before** producing code:
+
+| Task                                                     | SKILL to read first                             |
+| -------------------------------------------------------- | ----------------------------------------------- |
+| Scaffold a new custom module (BWC / Lumia / hybrid)      | `.cursor/skills/module-onboarding/SKILL.md`     |
+| Add / modify / remove fields, relates, dropdowns         | `.cursor/skills/field-manipulation/SKILL.md`    |
+| Any `before_*` / `after_*` / `process_record` hook       | `.cursor/skills/logic-hook/SKILL.md`            |
+| List / detail / edit / subpanel / Sidecar record views   | `.cursor/skills/ui-layout/SKILL.md`             |
+| Custom REST endpoint or outbound HTTP integration        | `.cursor/skills/api-integration/SKILL.md`       |
+| Report, dashlet, scheduled delivery                      | `.cursor/skills/reports-dashboards/SKILL.md`    |
+
+When the user names a module by UI label (EN or VI), resolve it first via `.cursor/skills/shared/references/module-name-mapping.md`.
+
+## 10. Git conventions
+
+- **Branches:** `feature/<ticket>-<slug>`, `bugfix/<ticket>-<slug>`, `hotfix/<ticket>-<slug>`.
+- **Commits:** `type(scope): description`
+  - Types: `feat`, `fix`, `refactor`, `chore`, `docs`, `test`.
+  - Scope: module key or area (e.g. `Accounts`, `J_Class`, `LogicHook`, `DotbApi`).
+  - Examples: `feat(J_Class): before_save hook to sync tenant`, `fix(MeetingApi): handle null attendees array`.
+  - No `[pfx]` tag.
+- **Commit:** everything under `custom/` and any new `modules/<NewCustomModule>/`. Commit the structure of `config_override.php` changes with placeholder values, never real secrets.
+- **Never commit:** `config.php`, `dotbcrm.log`, `cache/`, `upload/`, real API keys/tokens/passwords.
+
+## 11. Output format
+
+When generating code, respond in this exact order:
+
+1. **Plan** (2–3 lines) — which files will be created/edited and why.
+2. **Files** — for each file:
+   - Full path from repo root (e.g. `custom/modules/J_Class/logicClass.php`).
+   - Complete content, no truncation, no `// ... rest of code ...`.
+   - File-level docblock from section 6.
+3. **Post-install** — always include **Quick Repair & Rebuild**; add **Rebuild Relationships** when relationships changed; add `sugar_cache_clear` / hard browser refresh when Sidecar files changed. See `.cursor/skills/shared/references/repair-and-rebuild.md`.
+4. **Verify** — UI check to perform + what to grep in `./dotbcrm.log`.
+
+Strict rules:
+
+- No partial code.
+- No generic names like `MyHook`, `CustomField`, `pfx_Something`, `crm_Something`.
+- No hardcoded credentials.
+- If a task requires >3 files, list the full file tree upfront before any file body.
+- If unsure, ask ONE specific question first.
+
+## 12. Quick reference card
+
+| Task                              | Location                                                                                                        |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Custom field (vardef extension)   | `custom/Extension/modules/<Module>/Ext/Vardefs/<prefix>_<field>.php`                                            |
+| Register a logic hook             | `custom/Extension/modules/<Module>/Ext/LogicHooks/<prefix>_<hook>_<Module>.php`                                 |
+| Logic hook class file             | `custom/modules/<Module>/<ClassName>.php`                                                                       |
+| Module language labels            | `custom/Extension/modules/<Module>/Ext/Language/{en_us,vn_vn}.lang.php` (both)                                  |
+| App-wide dropdown list            | `custom/Extension/application/Ext/Language/{en_us,vn_vn}.<prefix>_lists.php` (both)                             |
+| BWC detail/edit/list view         | `custom/modules/<Module>/metadata/{detailviewdefs,editviewdefs,listviewdefs,searchdefs}.php`                    |
+| Sidecar record / recordlist view  | `custom/Extension/modules/<Module>/Ext/clients/base/views/<view>/<view>.php` (or direct override)               |
+| Subpanel (BWC)                    | `custom/Extension/modules/<Module>/Ext/Layoutdefs/<prefix>_<subpanel>.php`                                      |
+| Subpanel (Sidecar)                | `custom/Extension/modules/<Module>/Ext/clients/base/layouts/subpanels/` or `custom/modules/<Module>/clients/base/layouts/subpanels/` |
+| Custom REST endpoint (`DotbApi`)  | `custom/clients/base/api/<Name>Api.php`                                                                         |
+| Outbound integration client       | `custom/include/<prefix>_<Service>Client.php`                                                                   |
+| Hybrid module registration        | `$dotb_config['hybrid_modules']` in `config_override.php`                                                       |
+| Credentials / endpoints / flags   | `config_override.php`                                                                                           |
+| After ANY change                  | Admin → Repair → Quick Repair and Rebuild (+ Rebuild Relationships if relationships changed)                    |
