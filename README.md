@@ -64,11 +64,11 @@ git commit -m "chore(cursor): add dotb-cursor-skills submodule"
 
 ### Step 3 — Activate the rule in Cursor
 
-Cursor only auto-loads rules from `.cursor/rules/`. The rule lives inside the submodule at `.cursor/skills/dotb.mdc`, so link it in (tracked in the consuming repo):
+Cursor only auto-loads rules from `.cursor/rules/` at the workspace root. The rule lives inside the submodule at `.cursor/skills/rules/dotb.mdc`, so link it in (tracked in the consuming repo):
 
 ```bash
 mkdir -p .cursor/rules
-ln -s ../skills/dotb.mdc .cursor/rules/dotb.mdc
+ln -s ../skills/rules/dotb.mdc .cursor/rules/dotb.mdc
 git add .cursor/rules/dotb.mdc
 git commit -m "chore(cursor): activate dotb rule via submodule symlink"
 ```
